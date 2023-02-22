@@ -1,5 +1,5 @@
 ![Tec de Monterrey](images/logotecmty.png)
-# Analysis and Design of Advanced Algorithms (TC2038)
+# Development of advanced computer science applications (TC3002B)
 
 ```
 <program> ::= <statement-sequence>
