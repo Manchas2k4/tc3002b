@@ -1,0 +1,17 @@
+VAR SIZE, RED, GREEN, BLUE 
+
+SIZE := 10
+RED := 10
+GREEN := 0
+BLUE := 0
+
+REPEAT 30 [
+	REPEAT 4 [
+		FD SIZE
+		RT 90
+	]
+	RT 10
+	COLOR RED GREEN BLUE
+	SIZE := (SIZE + 5)
+	RED := ((RED + 10) MOD 255)
+]

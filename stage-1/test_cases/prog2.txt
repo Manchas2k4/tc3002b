@@ -1,0 +1,10 @@
+VAR SIZE 
+SIZE := 10
+REPEAT 30 [
+	REPEAT 4 [
+		FD SIZE
+		RT 90
+	]
+	RT 10
+	SIZE := (SIZE + 5)
+]

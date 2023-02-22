@@ -1,0 +1,11 @@
+% COMENTARIO 1
+VAR I 
+I := 10.0
+REPEAT (99 + 1) [
+	FD I
+	LT 90
+	% COMENTARIO 2
+	PRINT ["I", I]
+	I := (I + 10.0)
+]
+% COMENTARIO 3
