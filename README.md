@@ -1,5 +1,6 @@
 ![Tec de Monterrey](images/logotecmty.png)
 # Development of advanced computer science applications (TC3002B)
+## Definition of a Logo dialect
 
 ```
 <program> ::= <statement-sequence>
