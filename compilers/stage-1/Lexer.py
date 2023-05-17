@@ -69,7 +69,7 @@ class Lexer:
 		self.__words["VAR"] = Token(Tag.VAR, "VAR")
 		self.__words["FORWARD"] = Token(Tag.FORWARD, "FORWARD")
 		self.__words["FD"] = Token(Tag.FORWARD, "FORWARD")
-		## ADD ALL RESERVED WORDS ##
+		## ADD THE REST RESERVED WORDS, REMEMBER THAT SOME RESERVER WORDS HAVE THE SAME TAG ##
 
 	def read(self):
 		self.__peek = self.__input.read(1)
