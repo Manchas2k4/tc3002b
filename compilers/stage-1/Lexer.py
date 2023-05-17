@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import IntEnum
 
-class Tag(Enum):
+class Tag(IntEnum):
 	EOF = 65535
 	ERROR = 65534
 	## Operators ##
@@ -34,21 +34,28 @@ class Token:
 		
 	def __str__(self):
 		if self.__tag == Tag.GEQ:
-			return "Token - value >="
+			return "'>='"
 		elif self.__tag == Tag.LEQ:
-			return "Token - value <="
+			return "'<='"
 		elif self.__tag == Tag.NEQ:
-			return "Token - value <>"
+			return "'<>'"
 		elif self.__tag == Tag.ASSIGN:
-			return "Token - value :="
+			return "':='"
 		elif self.__tag == Tag.TRUE:
-			return "Token - value TRUE"
+			return "'#t'"
 		elif self.__tag == Tag.FALSE:
-			return "Token - value FALSE"
-		elif self.__tag == Tag.VAR:
-			return "Token - value VAR"
+			return "'#f'"
+		elif self.__tag == Tag.NUMBER:
+			return "numeric constant"
+		elif self.__tag == Tag.ID:
+			return "'" + str(self.__value) + "'"
+		elif self.__tag >= Tag.VAR and self.__tag <= Tag.MOD:
+			return "'" +  str(self.__value).lower() + "'"
+		elif self.__tag == Tag.STRING:
+			return "string constant"
 		else:
-			return "Token - value " + str(self.__tag)
+			return "'" + chr(self.__tag) + "'" 
+			return "'" + chr(self.__tag) + "'" 
 			
 class Lexer:
 	__peek = ' '

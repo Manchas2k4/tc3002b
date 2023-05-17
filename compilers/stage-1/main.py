@@ -1,4 +1,4 @@
-from lexer import *
+from Lexer import *
 import sys
 
 if __name__ == '__main__':
@@ -9,3 +9,4 @@ if __name__ == '__main__':
 		print(str(token))
 		token = lexer.scan()
 	print("END")
+
