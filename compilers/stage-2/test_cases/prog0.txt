@@ -1,0 +1,16 @@
+VAR Y
+
+Y := #T
+IF Y [
+	PRINT["YES"]
+]
+
+Y := Y <= #T
+
+Y := !Y
+BACKWARD(100)
+IFELSE Y [
+	PRINT["NO"]
+] [
+	PRINT["YES"]
+]
