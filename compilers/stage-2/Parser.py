@@ -152,15 +152,10 @@ class Parser:
 		else:
 			self.error("expected an conditional expression before " + str(self.__token))
 
+	"""
+	Implement
 	def __repetitiveStatement(self):
-		if self.__token.getTag() == Tag.REPEAT:
-			self.__check(Tag.REPEAT)
-			self.__expression()
-			self.__check(ord('['))
-			self.__statementSequence()
-			self.__check(ord(']'))
-		else:
-			self.error("expected an repetitive expression before " + str(self.__token))
+	"""
 		
 	def __structuredStatement(self):
 		if self.__token.getTag() in self.__firstStructuredStatement:
