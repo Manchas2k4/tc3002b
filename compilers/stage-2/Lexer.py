@@ -1,3 +1,11 @@
+"""
+=========================================================
+File: Lexer.py
+Author: Pedro Pérez
+Date: 10/abril/2022
+=========================================================
+"""
+
 from enum import IntEnum
 
 class Tag(IntEnum):
