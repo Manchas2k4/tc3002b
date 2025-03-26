@@ -1,3 +1,25 @@
+<
+
+<=
+
+<>
+
+>= 
+
+>
+
+#t
+
+#F
+
+##
+
+:=
+
+:
+
+"hola a todo el mundo, espero que estén bien"
+
 % COMENTARIO 1
 VAR I 
 

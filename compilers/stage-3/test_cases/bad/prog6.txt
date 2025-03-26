@@ -1,0 +1,21 @@
+VAR RATIO, ANGLE, I, F1, F2
+
+I := 1
+RATIO := 0
+ANGLE := 90
+
+WHILE (I <= 50) [
+  IFELSE (I < 3) [
+    RATIO := 1
+    F1 := 1
+    F2 := 1
+  ] [
+    RATIO := F1 + F2
+    F1 := F2
+    F2 := RATIO 
+  ]
+
+  % PARAMETRO FALTANTE
+  ARC(ANGLE)
+  I := I + 1
+]

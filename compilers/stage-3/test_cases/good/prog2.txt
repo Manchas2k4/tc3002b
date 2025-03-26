@@ -1,0 +1,15 @@
+VAR SIZE, I, J
+
+SIZE := 10
+I := 10
+WHILE (I > 0) [
+	J := 1
+	WHILE (J <= 4) [
+		FD (SIZE)
+		RT (90)
+		J := J + 1
+	]
+	RT (10)
+	SIZE := (SIZE + 5)
+	I := i - 1
+]

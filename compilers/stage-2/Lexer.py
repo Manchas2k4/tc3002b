@@ -42,7 +42,7 @@ class Token:
 		elif self.tag == Tag.NUMBER:
 			return str(self.value)
 		elif self.tag == Tag.ID:
-			return "'" + str(self.value) + "'"
+			return "ID = '" + str(self.value) + "'"
 		elif self.tag >= Tag.VAR and self.tag <= Tag.MOD:
 			return "'" +  str(self.value) + "'"
 		elif self.tag == Tag.STRING:
@@ -57,6 +57,7 @@ class Lexer:
 	current_path = None
 	next_buffer = None
 	words = {}
+	line = 0
 
 	def __init__(self, file_path, buffer_size = 1014):
 		self.file_path = file_path
@@ -64,6 +65,7 @@ class Lexer:
 		self.position = 0
 		self.current_path = ""
 		self.next_buffer = ""
+		self.line = 1
 
 		with open(self.file_path, 'r') as file:
 			file.seek(self.position)
@@ -71,10 +73,12 @@ class Lexer:
 			self.next_buffer = file.read(self.buffer_size)
 			self.position += self.buffer_size
 
-		self.__words["VAR"] = Token(Tag.VAR, "VAR")
-		self.__words["FORWARD"] = Token(Tag.FORWARD, "FORWARD")
-		self.__words["FD"] = Token(Tag.FORWARD, "FORWARD")
-		## ADD THE REST RESERVED WORDS, REMEMBER THAT SOME RESERVER WORDS HAVE THE SAME TAG ##
+		self.words["VAR"] = Token(Tag.VAR, "VAR")
+		self.words["FORWARD"] = Token(Tag.FORWARD, "FORWARD")
+		self.words["FD"] = Token(Tag.FORWARD, "FORWARD")
+		self.words["BACKWARD"] = Token(Tag.BACKWARD, "BACKWARD")
+		## ADD THE REST RESERVED WORDS, REMEMBER THAT SOME RESERVER WORDS ##
+		## HAVE THE SAME TAG ##
 
 	def get_next_character(self):
 		if len(self.current_buffer) == 0 and len(self.next_buffer) > 0:
@@ -87,11 +91,16 @@ class Lexer:
 		if len(self.current_buffer) > 0:
 			character = self.current_buffer[0]
 			self.current_buffer = self.current_buffer[1:]
+
+			if character == '\n':
+				self.line += 1
 			return character
 		
 		return None
 	
 	def push_back(self, character):
+		if character == '\n':
+			self.line -= 1
 		self.current_buffer = character + self.current_buffer
 
 	def scan(self):
@@ -104,12 +113,11 @@ class Lexer:
 			if character.isspace():
 				continue
 
-			if character == '%':
-				while True:
-					character = self.get_next_character()
-					if character == '\n':
-						break
-				continue
+			## ADD CODE TO SKIP COMMENTS HERE ##
+			## DETECTS THE '%' SYMBOL IN A CHARACTER SEQUENCE AND,   ##
+			## IF FOUND, DISCARDS ALL CHARACTERS UNTIL A NEWLINE     ##
+			## OR THE END OF THE SEQUENCE IS REACHED, THEN CONTINUES ##
+			## WITH THE NEXT ITERATION OF THE LOOP. ##
 
 			if character == '<':
 				character = self.get_next_character()
@@ -131,8 +139,15 @@ class Lexer:
 					return Token(ord('>'))
 				
 			if character == '#':
-				# ADD CODE TO SKIP COMMENTS HERE #
-				pass
+				character = self.get_next_character().upper()
+				if character in ['T', 'F']:
+					if character == 'T':
+						return Token(Tag.TRUE, "#T")	
+					else:
+						return Token(Tag.FALSE, "#F")	
+				else:
+					self.push_back(character)
+					return Token(ord('#'))
 				
 			if character == ':':
 				character = self.get_next_character()
@@ -159,7 +174,14 @@ class Lexer:
 					character = self.get_next_character()
 					if not character.isdigit():
 						break
-				## ADD CODE TO PROCESS DECIMAL PART HERE ##
+				## ADD CODE TO PROCESS DECIMAL PART HERE   ##
+				## CHECKS IF A CHARACTER IS A '.' AND THEN HANDLES DECIMAL ##
+				## NUMBER PARSING. IF THE NEXT CHARACTER IS A DIGIT, IT    ##
+				## CONVERTS THE SEQUENCE INTO A FLOATING-POINT NUMBER BY   ##
+				## CONTINUOUSLY ADDING DIGITS DIVIDED BY AN INCREASING     ##
+				## POWER OF TEN UNTIL NO MORE DIGITS ARE FOUND. IF THE     ##
+				## NEXT CHARACTER AFTER THE '.' IS NOT A DIGIT, IT RAISES  ##
+				## A 'LEXICAL EXCEPTION'. ##
 				self.push_back(character)
 				return Token(Tag.NUMBER, value)
 			
