@@ -54,7 +54,7 @@ class Lexer:
 	file_path = None
 	position = 0
 	buffer_size = 0
-	current_path = None
+	current_buffer = None
 	next_buffer = None
 	words = {}
 	line = 0
@@ -63,7 +63,7 @@ class Lexer:
 		self.file_path = file_path
 		self.buffer_size = buffer_size
 		self.position = 0
-		self.current_path = ""
+		self.current_buffer = ""
 		self.next_buffer = ""
 		self.line = 1
 
