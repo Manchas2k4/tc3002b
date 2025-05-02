@@ -1,4 +1,6 @@
 from Lexer import *
+from Translator import *
+from Type import *
 
 class Parser:
 	lexer = None
@@ -41,22 +43,54 @@ class Parser:
 	
 	def analize(self):
 		self.token = self.lexer.scan()
-		self.program()
+		return self.program()
 
 	def primaryExpression(self):
 		if self.token.tag in self.firstPrimaryExpression:
 			if self.token.tag == Tag.ID:
+				# semantic action #
+				current = self.token
+				# semantic action #
+
 				self.check(Tag.ID)
+
+				# semantic action #
+				return Identifier(current.value, self.lexer.line)
+				# semantic action #
 			elif self.token.tag == Tag.NUMBER:
+				# semantic action #
+				current = self.token
+				# semantic action #
+
 				self.check(Tag.NUMBER)
+
+				# semantic action #
+				return Number(current.value)
+				# semantic action #
 			elif self.token.tag == Tag.TRUE:
 				self.check(Tag.TRUE)
+
+				# semantic action #
+				return Boolean(True)
+				# semantic action #
 			elif self.token.tag == Tag.FALSE:
 				self.check(Tag.FALSE)
+
+				# semantic action #
+				return Boolean(False)
+				# semantic action #
 			elif self.token.tag == ord('('):
 				self.check(ord('('))
-				self.expression()
+
+				# semantic action #
+				node = self.expression()
+				# semantic action #
+
 				self.check(ord(')'))
+
+				# semantic action #
+				return node
+				# semantic action #
 		else:
 			self.error("expected a primary expression before " + str(self.token))
 		
@@ -64,312 +98,147 @@ class Parser:
 		if self.token.tag in self.firstUnaryExpression:
 			if self.token.tag == ord('-'):
 				self.check(ord('-'))
-				self.unaryExpression()
+
+				# semantic action #
+				right = self.unaryExpression()
+				return Minus(right)
+				# semantic action #
 			elif self.token.tag == ord('!'):
 				self.check(ord('!'))
-				self.unaryExpression()
+
+				# semantic action #
+				right = self.unaryExpression()
+				return Not(right)
+				# semantic action #
 			else:
-				self.primaryExpression()
+				# semantic action #
+				return self.primaryExpression()
+				# semantic action #
 		else: 
 			self.error("expected an unary expression before " + str(self.token))
 		
-	def extendedMultiplicativeExpression(self):
+	def extendedMultiplicativeExpression(self, left):
 		if self.token.tag in self.firstExtendedMultiplicativeExpression:
 			if self.token.tag == ord('*'):
 				self.check(ord('*'))
-				self.unaryExpression()
-				self.extendedMultiplicativeExpression()
+				
+				# semantic action #
+				right = self.unaryExpression()
+				node = Multiply(left, right)
+				return self.extendedMultiplicativeExpression(node)
+				# semantic action #
 			elif self.token.tag == ord('/'):
 				self.check(ord('/'))
-				self.unaryExpression()
-				self.extendedMultiplicativeExpression()
+
+				# semantic action #
+				right = self.unaryExpression()
+				node = Divide(left, right, self.lexer.line)
+				return self.extendedMultiplicativeExpression(node)
+				# semantic action #
 			elif self.token.tag == Tag.MOD:
 				self.check(Tag.MOD)
-				self.unaryExpression()
-				self.extendedMultiplicativeExpression()
+				
+				# semantic action #
+				right = self.unaryExpression()
+				node = Module(left, right, self.lexer.line)
+				return self.extendedMultiplicativeExpression(node)
+				# semantic action #
 		else:
-			pass
+			return left
 
 	def multiplicativeExpression(self):
 		if self.token.tag in self.firstMultiplicativeExpression:
-			self.unaryExpression()
-			self.extendedMultiplicativeExpression()
+			# semantic action #
+			left = self.unaryExpression()
+			return self.extendedMultiplicativeExpression(left)
+			# semantic action #
 		else:
 			self.error("expected an multiplicative expression before " + str(self.token))
 	
-	"""
-	Implement
-	def extendedAdditiveExpression(self):
-	
+	def extendedAdditiveExpression(self, left):
+		if self.token.tag in self.firstExtendedAdditiveExpression:
+			if self.token.tag == ord('+'):
+				self.check(ord('+'))
+				
+				# semantic action #
+				right = self.multiplicativeExpression()
+				node = Add(left, right)
+				return self.extendedAdditiveExpression(node)
+				# semantic action #
+			elif self.token.tag == ord('-'):
+				self.check(ord('-'))
+				
+				# semantic action #
+				right = self.multiplicativeExpression()
+				node = Subtrat(left, right)
+				return self.extendedAdditiveExpression(node)
+				# semantic action #
+		else:
+			return left
+
 	def additiveExpression(self):
-	
-	def extendedRelationalExpression(self):
-	
+		if self.token.tag in self.firstAdditiveExpression:
+			# semantic action #
+			left = self.multiplicativeExpression()
+			return self.extendedAdditiveExpression(left)
+			# semantic action #
+		else:
+			self.error("expected an additive expression before " + str(self.token))
+
+	def extendedRelationalExpression(self, left):
+		if self.token.tag in self.firstExtendedRelationExpresion:
+			if self.token.tag == ord('<'):
+				self.check(ord('<'))
+				
+				# semantic action #
+				right = self.additiveExpression()
+				node = Lesser(left, right)
+				return self.extendedRelationalExpression(node)
+				# semantic action #
+			elif self.token.tag == Tag.LEQ:
+				self.check(Tag.LEQ)
+				
+				# semantic action #
+				right = self.additiveExpression()
+				node = LesserOrEqual(left, right)
+				return self.extendedRelationalExpression(node)
+				# semantic action #
+			elif self.token.tag == ord('>'):
+				self.check(ord('>'))
+
+				# semantic action #
+				right = self.additiveExpression()
+				node = Greater(left, right)
+				return self.extendedRelationalExpression(node)
+				# semantic action #
+			elif self.token.tag == Tag.GEQ:
+				self.check(Tag.GEQ)
+				
+				# semantic action #
+				right = self.additiveExpression()
+				node = GreaterOrEqual(left, right)
+				return self.extendedRelationalExpression(node)
+				# semantic action #
+		else:
+			return left
+
 	def relationalExpression(self):
-	
-	def extendedEqualityExpression(self):
-	
-	def equalityExpression(self):
-	
-	def extendedConditionalTerm(self):
-	
-	def conditionalTerm(self):
-	
-	def extendedConditionalExpression(self):
-	
-	def conditionalExpression(self):
-	
-	def expression(self):
-	"""
+		if self.token.tag in self.firstRelationalExpression:
+			# semantic action #
+			left = self.additiveExpression()
+			return self.extendedRelationalExpression(left)
+			# semantic action #
+		else:
+			self.error("expected an relational expression before " + str(self.token))
 
-	def ifElseStatement(self):
-		if self.token.tag == Tag.IFELSE:
-			self.check(Tag.IFELSE)
-			self.check(ord('('))
-			self.expression()
-			self.check(ord(')'))
-			self.check(ord('['))
-			self.statementSequence()
-			self.check(ord(']'))
-			self.check(ord('['))
-			self.statementSequence()
-			self.check(ord(']'))
-		else:
-			self.error("expected an IFELSE expression before " + str(self.token))
-
-	def ifStatement(self):
-		if self.token.tag == Tag.IF:
-			self.check(Tag.IF)
-			self.check(ord('('))
-			self.expression()
-			self.check(ord(')'))
-			self.check(ord('['))
-			self.statementSequence()
-			self.check(ord(']'))
-		else:
-			self.error("expected an IF expression before " + str(self.token))
-
-	def conditionalStatement(self):
-		if self.token.tag in self.firstConditionalStatement:
-			if self.token.tag == Tag.IF:
-				self.ifStatement()
-			elif self.token.tag == Tag.IFELSE:
-				self.ifElseStatement()
-		else:
-			self.error("expected an conditional expression before " + str(self.token))
-
-	def repetitiveStatement(self):
-		if self.token.tag == Tag.WHILE:
-			self.check(Tag.WHILE)
-			self.check(ord('('))
-			self.expression()
-			self.check(ord(')'))
-			self.check(ord('['))
-			self.statementSequence()
-			self.check(ord(']'))
-		else:
-			self.error("expected an repetitive expression before " + str(self.token))
-		
-	def structuredStatement(self):
-		if self.token.tag in self.firstStructuredStatement:
-			if self.token.tag in self.firstConditionalStatement:
-				self.conditionalStatement()
-			elif self.token.tag == Tag.WHILE:
-				self.repetitiveStatement()
-		else:
-			self.error("expected an structured expression before " + str(self.token))
-
-	def element(self):
-		if self.token.tag in self.firstElement:
-			if self.token.tag == Tag.STRING:
-				self.check(Tag.STRING)
-			elif self.token.tag in self.firstExpression:
-				self.expression()
-		else:
-			self.error("expected an element expression before " + str(self.token))
-		
-	def elementList(self):
-		if self.token.tag == ord(','):
-			self.check(ord(','))
-			self.element()
-			self.elementList()
-		else:
-			pass
-		
-	def textStatement(self):
-		if self.token.tag == Tag.PRINT:
-			self.check(Tag.PRINT)
-			self.check(ord('('))
-			self.element()
-			self.elementList()
-			self.check(ord(')'))
-		else:
-			self.error("expected a PRINT statement before " + str(self.token))
-
-	def penWidthStatement(self):
-		if self.token.tag == Tag.PENWIDTH:
-			self.check(Tag.PENWIDTH)
-			self.check(ord('('))
-			self.expression()
-			self.check(ord(')'))
-		else:
-			self.error("expected a PENWIDTH statement before " + str(self.token))
-
-	def colorStatement(self):
-		if self.token.tag == Tag.COLOR:
-			self.check(Tag.COLOR)
-			self.check(ord('('))
-			self.expression()
-			self.check(ord(','))
-			self.expression()
-			self.check(ord(','))
-			self.expression()
-			self.check(ord(')'))
-		else:
-			self.error("expected a COLOR statement before " + str(self.token))
-		
-	def penDownStatement(self):
-		if self.token.tag == Tag.PENDOWN:
-			self.check(Tag.PENDOWN)
-			self.check(ord('('))
-			self.check(ord(')'))
-		else:
-			self.error("expected a PENDOWN statement before " + str(self.token))
-		
-	def penUpStatement(self):
-		if self.token.tag == Tag.PENUP:
-			self.check(Tag.PENUP)
-			self.check(ord('('))
-			self.check(ord(')'))
-		else:
-			self.error("expected a PENUP statement before " + str(self.token))
-		
-	def arcStatement(self):
-		if self.token.tag == Tag.ARC:
-			self.check(Tag.ARC)
-			self.check(ord('('))
-			self.expression()
-			self.check(ord(','))
-			self.expression()
-			self.check(ord(')'))
-		else:
-			self.error("expected a ARC statement before " + str(self.token))
-		
-	def circleStatement(self):
-		if self.token.tag == Tag.CIRCLE:
-			self.check(Tag.CIRCLE)
-			self.check(ord('('))
-			self.expression()
-			self.check(ord(')'))
-		else:
-			self.error("expected a CIRCLE statement before " + str(self.token))
-		
-	def clearStatement(self):
-		if self.token.tag == Tag.CLEAR:
-			self.check(ord('('))
-			self.check(Tag.CLEAR)
-			self.check(ord(')'))
-		else:
-			self.error("expected a CLEAR statement before " + str(self.token))
-
-	def drawingStatement(self):
-		if self.token.tag in self.firstDrawingStatement:
-			if self.token.tag == Tag.CLEAR:
-				self.clearStatement()
-			elif self.token.tag == Tag.CIRCLE:
-				self.circleStatement()
-			elif self.token.tag == Tag.ARC:
-				self.arcStatement()
-			elif self.token.tag == Tag.PENUP:
-				self.penUpStatement()
-			elif self.token.tag == Tag.PENDOWN:
-				self.penDownStatement()
-			elif self.token.tag == Tag.COLOR:
-				self.colorStatement()
-			elif self.token.tag == Tag.PENWIDTH:
-				self.penWidthStatement()
-		else:
-			self.error("expected a drawing statement before " + str(self.token))
-	
-	"""
-	Implement
-
-	def setXYStatement(self):
-	
-	def setXStatement(self):
-	
-	def setYStatement(self):
-	
-	def leftStatement(self):
-	
-	def rightStatement(self):
-	
-	def backwardStatement(self):
-	
-	def forwardStatement(self):
-	
-	def movementStatement(self):
-	"""
-
-	def assigmentStatement(self):
-		if self.token.tag == Tag.ID:
-			self.check(Tag.ID)
-			self.check(Tag.ASSIGN)
-			self.expression()
-		else:
-			self.error("expected an ASSIGMENT statement before " + str(self.token))
-		
-	def identifierList(self):
-		if self.token.tag == ord(','):
-			self.check(ord(','))
-			self.check(Tag.ID)
-			self.identifierList()
-		else:
-			pass
-
-	def declarationStatement(self):
-		if self.token.tag == Tag.VAR:
-			self.check(Tag.VAR)
-			self.check(Tag.ID)
-			self.identifierList()
-		else:
-			self.error("expected a DECLARATION statement before " + str(self.token))
-		
-	def simpleStatement(self):
-		if self.token.tag in self.firstSimpleStatement:
-			if self.token.tag == Tag.VAR:
-				self.declarationStatement()
-			elif self.token.tag == Tag.ID:
-				self.assigmentStatement()
-			elif self.token.tag in self.firstMovementStatement:
-				self.movementStatement()
-			elif self.token.tag in self.firstDrawingStatement:
-				self.drawingStatement()
-			elif self.token.tag == Tag.PRINT:
-				self.textStatement()
-		else:
-			self.error("expected a simple statement statement before " + str(self.token))
-		
-	def statement(self):
-		if self.token.tag in self.firstStatement:
-			if self.token.tag in self.firstSimpleStatement:
-				self.simpleStatement()
-			elif self.token.tag in self.firstStructuredStatement:
-				self.structuredStatement()
-		else:
-			self.error("expected a statement before " + str(self.token))
-		
-	def statementSequence(self):
-		if self.token.tag in self.firstStatementSequence:
-			self.statement()
-			self.statementSequence()
-		else:
-			pass
+	## ADD MISSING METHODS ##
 
 	def program(self):
 		if self.token.tag in self.firstProgram:
-			self.statementSequence()
-			if self.token.tag != Tag.EOF:
+			sequence = self.statementSequence()
+			if self.token.tag == Tag.EOF:
+				return Program(sequence)
+			else:
 				print(str(self.token))
 				self.error("ilegal start of a statement")
 		else:
