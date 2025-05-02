@@ -9,14 +9,36 @@ class Tag(IntEnum):
 	NEQ = 260
 	ASSIGN = 261
 	## REGULAR EXPRESSIONS ##
-	ID = 358
-	NUMBER = 359
-	STRING = 360
-	TRUE = 361
-	FALSE = 362
-	## ADD THE MISSING RESERVED WORDS, JUST FOLLOW THE NUMBER SEQUENCE ##
+	ID = 357
+	NUMBER = 358
+	STRING = 359
+	TRUE = 360
+	FALSE = 361
+	## RESERVED TokenS ##
 	VAR = 457
 	FORWARD = 458
+	BACKWARD = 459
+	LEFT = 460
+	RIGHT = 461
+	SETX = 462
+	SETY = 463
+	SETXY = 464
+	CLEAR = 465
+	CIRCLE = 466
+	ARC = 467
+	PENUP = 468
+	PENDOWN = 469
+	COLOR = 470
+	PENWIDTH = 471
+	PRINT = 472
+	WHILE = 473
+	IF = 474
+	IFELSE = 475
+	HOME = 476
+	NOT = 477
+	OR = 478
+	AND = 479
+	MOD = 480
 	
 class Token:
 	tag = Tag.EOF
@@ -54,7 +76,7 @@ class Lexer:
 	file_path = None
 	position = 0
 	buffer_size = 0
-	current_buffer = None
+	current_path = None
 	next_buffer = None
 	words = {}
 	line = 0
@@ -63,7 +85,7 @@ class Lexer:
 		self.file_path = file_path
 		self.buffer_size = buffer_size
 		self.position = 0
-		self.current_buffer = ""
+		self.current_path = ""
 		self.next_buffer = ""
 		self.line = 1
 
@@ -77,8 +99,32 @@ class Lexer:
 		self.words["FORWARD"] = Token(Tag.FORWARD, "FORWARD")
 		self.words["FD"] = Token(Tag.FORWARD, "FORWARD")
 		self.words["BACKWARD"] = Token(Tag.BACKWARD, "BACKWARD")
-		## ADD THE REST RESERVED WORDS, REMEMBER THAT SOME RESERVER WORDS ##
-		## HAVE THE SAME TAG ##
+		self.words["BK"] = Token(Tag.BACKWARD, "BACKWARD")
+		self.words["LEFT"] = Token(Tag.LEFT, "LEFT")
+		self.words["LT"] = Token(Tag.LEFT, "LEFT")
+		self.words["RIGHT"] = Token(Tag.RIGHT, "RIGHT")
+		self.words["RT"] = Token(Tag.RIGHT, "RIGHT")
+		self.words["SETX"] = Token(Tag.SETX, "SETX")
+		self.words["SETY"] = Token(Tag.SETY, "SETY")
+		self.words["SETXY"] = Token(Tag.SETXY, "SETXY")
+		self.words["HOME"] = Token(Tag.HOME, "HOME")
+		self.words["CLEAR"] = Token(Tag.CLEAR, "CLEAR")
+		self.words["CLS"] = Token(Tag.CLEAR, "CLEAR")
+		self.words["ARC"] = Token(Tag.ARC, "ARC")
+		self.words["PENUP"] = Token(Tag.PENUP, "PENUP")
+		self.words["PU"] = Token(Tag.PENUP, "PENUP")
+		self.words["PENDOWN"] = Token(Tag.PENDOWN, "PENDOWN")
+		self.words["PD"] = Token(Tag.PENDOWN, "PENDOWN")
+		self.words["COLOR"] = Token(Tag.COLOR, "COLOR")
+		self.words["PENWIDTH"] = Token(Tag.PENWIDTH, "PENWIDTH")
+		self.words["PRINT"] = Token(Tag.PRINT, "PRINT")
+		self.words["WHILE"] = Token(Tag.WHILE, "WHILE")
+		self.words["IF"] = Token(Tag.IF, "IF")
+		self.words["IFELSE"] = Token(Tag.IFELSE, "IFELSE")
+		self.words["NOT"] = Token(Tag.NOT, "NOT")
+		self.words["OR"] = Token(Tag.OR, "OR")
+		self.words["AND"] = Token(Tag.AND, "AND")
+		self.words["MOD"] = Token(Tag.MOD, "MOD")
 
 	def get_next_character(self):
 		if len(self.current_buffer) == 0 and len(self.next_buffer) > 0:
@@ -112,12 +158,13 @@ class Lexer:
 			
 			if character.isspace():
 				continue
-
-			## ADD CODE TO SKIP COMMENTS HERE ##
-			## DETECTS THE '%' SYMBOL IN A CHARACTER SEQUENCE AND,   ##
-			## IF FOUND, DISCARDS ALL CHARACTERS UNTIL A NEWLINE     ##
-			## OR THE END OF THE SEQUENCE IS REACHED, THEN CONTINUES ##
-			## WITH THE NEXT ITERATION OF THE LOOP. ##
+			
+			if character == '%':
+				while True:
+					character = self.get_next_character()
+					if character is None or character == '\n':
+						break
+				continue
 
 			if character == '<':
 				character = self.get_next_character()
@@ -174,14 +221,18 @@ class Lexer:
 					character = self.get_next_character()
 					if not character.isdigit():
 						break
-				## ADD CODE TO PROCESS DECIMAL PART HERE   ##
-				## CHECKS IF A CHARACTER IS A '.' AND THEN HANDLES DECIMAL ##
-				## NUMBER PARSING. IF THE NEXT CHARACTER IS A DIGIT, IT    ##
-				## CONVERTS THE SEQUENCE INTO A FLOATING-POINT NUMBER BY   ##
-				## CONTINUOUSLY ADDING DIGITS DIVIDED BY AN INCREASING     ##
-				## POWER OF TEN UNTIL NO MORE DIGITS ARE FOUND. IF THE     ##
-				## NEXT CHARACTER AFTER THE '.' IS NOT A DIGIT, IT RAISES  ##
-				## A 'LEXICAL EXCEPTION'. ##
+				if character == '.':
+					character = self.get_next_character()
+					if character.isdigit():
+						divisor = 10.0
+						while True:
+							value = value + (float(character) / divisor)
+							divisor *= 10.0
+							character = self.get_next_character()
+							if not character.isdigit():
+								break
+					else:
+						raise Exception('Lexical Exception')
 				self.push_back(character)
 				return Token(Tag.NUMBER, value)
 			
