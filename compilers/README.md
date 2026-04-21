@@ -7,7 +7,7 @@
 	<declaration-sequence>
 	<statement-sequence>
 			  
-<declaration-statement> ::=
+<declaration-sequence> ::=
   VAR <identifier> <identifier-list>
   
 <identifier-list> ::= ',' <identifier> <identifier-list>
