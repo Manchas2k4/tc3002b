@@ -1,0 +1,20 @@
+var x, z, x
+
+x := 1
+y := 2
+z := 3
+print(x > y)
+print(x < z)
+print((x > y) and (x < z))
+print((x > y) or (x < z))
+
+y := (x * x) + (2 * x) + 1
+print(x > y)
+print(x < z)
+print((x >> y) and (x < z))
+print((x > y) or (x < z))
+
+y := (3 * x) + (2 * z) - 1
+z := (x < y)
+x := y + z
+print(x)

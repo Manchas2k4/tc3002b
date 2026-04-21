@@ -31,7 +31,7 @@ class Tag(IntEnum):
 	COLOR = 470
 	PENWIDTH = 471
 	PRINT = 472
-	REPEAT = 473
+	WHILE = 473
 	IF = 474
 	IFELSE = 475
 	HOME = 476
@@ -41,203 +41,223 @@ class Tag(IntEnum):
 	MOD = 480
 	
 class Token:
-	__tag = Tag.EOF
-	__value = None
+	tag = Tag.EOF
+	value = None
 	
 	def __init__(self, tagId, val = None):
-		self.__tag = tagId
-		self.__value = val
-		
-	def getTag(self):
-		return self.__tag
-	
-	def getValue(self):
-		return self.__value
+		self.tag = tagId
+		self.value = val
 		
 	def __str__(self):
-		if self.__tag == Tag.GEQ:
+		if self.tag == Tag.GEQ:
 			return "'>='"
-		elif self.__tag == Tag.LEQ:
+		elif self.tag == Tag.LEQ:
 			return "'<='"
-		elif self.__tag == Tag.NEQ:
+		elif self.tag == Tag.NEQ:
 			return "'<>'"
-		elif self.__tag == Tag.ASSIGN:
+		elif self.tag == Tag.ASSIGN:
 			return "':='"
-		elif self.__tag == Tag.TRUE:
-			return "'#t'"
-		elif self.__tag == Tag.FALSE:
-			return "'#f'"
-		elif self.__tag == Tag.NUMBER:
-			return "numeric constant"
-		elif self.__tag == Tag.ID:
-			return "'" + str(self.__value) + "'"
-		elif self.__tag >= Tag.VAR and self.__tag <= Tag.MOD:
-			return "'" +  str(self.__value).lower() + "'"
-		elif self.__tag == Tag.STRING:
-			return "string constant"
+		elif self.tag == Tag.TRUE:
+			return "'#T'"
+		elif self.tag == Tag.FALSE:
+			return "'#F'"
+		elif self.tag == Tag.NUMBER:
+			return str(self.value)
+		elif self.tag == Tag.ID:
+			return "ID = '" + str(self.value) + "'"
+		elif self.tag >= Tag.VAR and self.tag <= Tag.MOD:
+			return "'" +  str(self.value) + "'"
+		elif self.tag == Tag.STRING:
+			return str(self.value)
 		else:
-			return "'" + chr(self.__tag) + "'" 
+			return "'" + chr(self.tag) + "'" 
 			
 class Lexer:
-	__peek = ' '
-	__Tokens = {}
-	__input = None
-	__line = 1
+	file_path = None
+	position = 0
+	buffer_size = 0
+	current_buffer = None
+	next_buffer = None
+	words = {}
+	line = 0
 
-	def __init__(self, filepath):
-		self.__input = open(filepath, "r")
-		self.__peek = ' '
-		self.__line = 1
+	def __init__(self, file_path, buffer_size = 4096):
+		self.file_path = file_path
+		self.buffer_size = buffer_size
+		self.position = 0
+		self.current_buffer = ""
+		self.next_buffer = ""
+		self.line = 1
 
-		self.__Tokens["VAR"] = Token(Tag.VAR, "VAR")
-		self.__Tokens["FORWARD"] = Token(Tag.FORWARD, "FORWARD")
-		self.__Tokens["FD"] = Token(Tag.FORWARD, "FORWARD")
-		self.__Tokens["BACKWARD"] = Token(Tag.BACKWARD, "BACKWARD")
-		self.__Tokens["BK"] = Token(Tag.BACKWARD, "BACKWARD")
-		self.__Tokens["LEFT"] = Token(Tag.LEFT, "LEFT")
-		self.__Tokens["LT"] = Token(Tag.LEFT, "LEFT")
-		self.__Tokens["RIGHT"] = Token(Tag.RIGHT, "RIGHT")
-		self.__Tokens["RT"] = Token(Tag.RIGHT, "RIGHT")
-		self.__Tokens["SETX"] = Token(Tag.SETX, "SETX")
-		self.__Tokens["SETY"] = Token(Tag.SETY, "SETY")
-		self.__Tokens["SETXY"] = Token(Tag.SETXY, "SETXY")
-		self.__Tokens["HOME"] = Token(Tag.HOME, "HOME")
-		self.__Tokens["CLEAR"] = Token(Tag.CLEAR, "CLEAR")
-		self.__Tokens["CLS"] = Token(Tag.CLEAR, "CLEAR")
-		self.__Tokens["ARC"] = Token(Tag.ARC, "ARC")
-		self.__Tokens["PENUP"] = Token(Tag.PENUP, "PENUP")
-		self.__Tokens["PU"] = Token(Tag.PENUP, "PENUP")
-		self.__Tokens["PENDOWN"] = Token(Tag.PENDOWN, "PENDOWN")
-		self.__Tokens["PD"] = Token(Tag.PENDOWN, "PENDOWN")
-		self.__Tokens["COLOR"] = Token(Tag.COLOR, "COLOR")
-		self.__Tokens["PENWIDTH"] = Token(Tag.PENWIDTH, "PENWIDTH")
-		self.__Tokens["PRINT"] = Token(Tag.PRINT, "PRINT")
-		self.__Tokens["REPEAT"] = Token(Tag.REPEAT, "REPEAT")
-		self.__Tokens["IF"] = Token(Tag.IF, "IF")
-		self.__Tokens["IFELSE"] = Token(Tag.IFELSE, "IFELSE")
-		self.__Tokens["NOT"] = Token(Tag.NOT, "NOT")
-		self.__Tokens["OR"] = Token(Tag.OR, "OR")
-		self.__Tokens["AND"] = Token(Tag.AND, "AND")
-		self.__Tokens["MOD"] = Token(Tag.MOD, "MOD")
+		with open(self.file_path, 'r') as file:
+			file.seek(self.position)
+			self.current_buffer = file.read(self.buffer_size)
+			self.next_buffer = file.read(self.buffer_size)
+			self.position += self.buffer_size
 
-	def getLine(self):
-		return self.__line
+		self.words["VAR"] = Token(Tag.VAR, "VAR")
+		self.words["FORWARD"] = Token(Tag.FORWARD, "FORWARD")
+		self.words["FD"] = Token(Tag.FORWARD, "FORWARD")
+		self.words["BACKWARD"] = Token(Tag.BACKWARD, "BACKWARD")
+		self.words["BK"] = Token(Tag.BACKWARD, "BACKWARD")
+		self.words["LEFT"] = Token(Tag.LEFT, "LEFT")
+		self.words["LT"] = Token(Tag.LEFT, "LEFT")
+		self.words["RIGHT"] = Token(Tag.RIGHT, "RIGHT")
+		self.words["RT"] = Token(Tag.RIGHT, "RIGHT")
+		self.words["SETX"] = Token(Tag.SETX, "SETX")
+		self.words["SETY"] = Token(Tag.SETY, "SETY")
+		self.words["SETXY"] = Token(Tag.SETXY, "SETXY")
+		self.words["HOME"] = Token(Tag.HOME, "HOME")
+		self.words["CLEAR"] = Token(Tag.CLEAR, "CLEAR")
+		self.words["CLS"] = Token(Tag.CLEAR, "CLEAR")
+		self.words["ARC"] = Token(Tag.ARC, "ARC")
+		self.words["PENUP"] = Token(Tag.PENUP, "PENUP")
+		self.words["PU"] = Token(Tag.PENUP, "PENUP")
+		self.words["PENDOWN"] = Token(Tag.PENDOWN, "PENDOWN")
+		self.words["PD"] = Token(Tag.PENDOWN, "PENDOWN")
+		self.words["COLOR"] = Token(Tag.COLOR, "COLOR")
+		self.words["PENWIDTH"] = Token(Tag.PENWIDTH, "PENWIDTH")
+		self.words["PRINT"] = Token(Tag.PRINT, "PRINT")
+		self.words["WHILE"] = Token(Tag.WHILE, "WHILE")
+		self.words["IF"] = Token(Tag.IF, "IF")
+		self.words["IFELSE"] = Token(Tag.IFELSE, "IFELSE")
+		self.words["NOT"] = Token(Tag.NOT, "NOT")
+		self.words["OR"] = Token(Tag.OR, "OR")
+		self.words["AND"] = Token(Tag.AND, "AND")
+		self.words["MOD"] = Token(Tag.MOD, "MOD")
 
-	def __read(self):
-		self.__peek = self.__input.read(1).upper()
+	def get_next_character(self):
+		if len(self.current_buffer) == 0 and len(self.next_buffer) == 0:
+			with open(self.file_path, 'r') as file:
+				file.seek(self.position)
+				self.current_buffer = file.read(self.buffer_size)
+				self.position += len(self.current_buffer)
+		elif len(self.current_buffer) == 0 and len(self.next_buffer) > 0:
+			self.current_buffer = self.next_buffer
+			with open(self.file_path, 'r') as file:
+				file.seek(self.position)
+				self.next_buffer = file.read(self.buffer_size)
+				self.position += len(self.next_buffer)
+
+		if len(self.current_buffer) > 0:
+			character = self.current_buffer[0]
+			self.current_buffer = self.current_buffer[1:]
+
+			if character == '\n':
+				self.line += 1
+			return character
+		
+		return ''
 	
-	def __readch(self, c):
-		self.__read()
-		if self.__peek != c:
-			return False
+	def push_back(self, character):
+		if character == '\n':
+			self.line -= 1
+		self.current_buffer = f"{character}{self.current_buffer}"
 
-		self.__peek = ' '
-		return True
-
-	def __skipSpaces(self):
-		while True:
-			if self.__peek == ' ' or self.__peek == '\t' or self.__peek == '\r':
-				self.__read()
-			elif self.__peek == '\n':
-				self.__read()
-				self.__line = self.__line + 1
-			else:
-				break
-	
 	def scan(self):
-		self.__skipSpaces()
+		while True:
+			character = self.get_next_character()
 
-		if self.__peek == '%':
-			while True:
-				self.__read()
-				if self.__peek == '\n':
-					break
-			self.__skipSpaces()
+			if character == '':
+				return Token(Tag.EOF)
 
-		if self.__peek == '<':
-			self.__read()
-			if self.__peek in ['=', '>']:
-				current = self.__peek
-				self.__read()
-				if current == '=':
-					return Token(Tag.LEQ, "<=")
-				else:
-					return Token(Tag.NEQ, "<>")
-			else:
-				return Token(ord('#'))
-		elif self.__peek == '>':
-			if self.__readch('='):
-				return Token(Tag.GEQ, ">=")
-			else:
-				return Token(ord('>'))
-		elif self.__peek == '#':
-			self.__read()
-			if self.__peek in ['T', 'F']:
-				current = self.__peek
-				self.__read()
-				if current == 'T':
-					return Token(Tag.TRUE, "#T")	
-				else:
-					return Token(Tag.FALSE, "#F")	
-			else:
-				return Token(ord('#'))
-		elif self.__peek == ':':
-			if self.__readch('='):
-				return Token(Tag.ASSIGN, ":=")
-			else:
-				return Token(ord(':'))
-
-		if self.__peek  == '"':
-			val = ""
-			while True:
-				val = val + self.__peek
-				self.__read()
-				if self.__peek == '"':
-					break
+			if character is None:
+				return Token(Tag.EOF)
 			
-			val = val + self.__peek
-			self.__read()
-			return Token(Tag.STRING, val)
+			if character.isspace():
+				continue
+			
+			if character == '%':
+				while True:
+					character = self.get_next_character()
+					if character is None or character == '\n':
+						break
+				continue
 
-		if self.__peek.isdigit():
-			val = 0.0
-			while True:
-				val = (val * 10) + int(self.__peek)
-				self.__read()
-				if not(self.__peek.isdigit()):
-					break
-			if self.__peek  == '.':
-				self.__read()
-				if self.__peek.isdigit():
-					divisor = 10.0
-					while True:
-						val = val + (float(self.__peek) / divisor)
-						divisor = divisor * 10.0
-						self.__read()
-						if not(self.__peek.isdigit()):
-							break
+			if character == '<':
+				character = self.get_next_character()
+				if character in ['=', '>']:
+					if character == '=':
+						return Token(Tag.LEQ, "<=")
+					else:
+						return Token(Tag.NEQ, "<>")
 				else:
-					raise Exception('Lexical Exception')
-			return Token(Tag.NUMBER, val)
+					self.push_back(character)
+					return Token(ord('<'))
+				
+			if character == '>':
+				character = self.get_next_character()
+				if character == '=':
+					return Token(Tag.GEQ, ">=")
+				else:
+					self.push_back(character)
+					return Token(ord('>'))
+				
+			if character == '#':
+				character = self.get_next_character().upper()
+				if character in ['T', 'F']:
+					if character == 'T':
+						return Token(Tag.TRUE, "#T")	
+					else:
+						return Token(Tag.FALSE, "#F")	
+				else:
+					self.push_back(character)
+					return Token(ord('#'))
+				
+			if character == ':':
+				character = self.get_next_character()
+				if character == '=':
+					return Token(Tag.ASSIGN, ":=")
+				else:
+					self.push_back(character)
+					return Token(ord(':'))
+				
+			if character == '"':
+				text = ""
+				while True:
+					text += character
+					character = self.get_next_character()
+					if character == '"':
+						break
+				text += character
+				return Token(Tag.STRING, text)
+			
+			if character.isdigit():
+				value = 0.0
+				while True:
+					value = (value * 10) + int(character)
+					character = self.get_next_character()
+					if character is None or not character.isdigit():
+						break
+				if character == '.':
+					character = self.get_next_character()
+					if character.isdigit():
+						divisor = 10.0
+						while True:
+							value = value + (float(character) / divisor)
+							divisor *= 10.0
+							character = self.get_next_character()
+							if not character.isdigit():
+								break
+					else:
+						raise Exception('Lexical Exception')
+				self.push_back(character)
+				return Token(Tag.NUMBER, value)
+			
+			if character.isalpha():
+				lexem = ""
+				while True:
+					lexem += character.upper()
+					character = self.get_next_character()
+					if character is None or not character.isalnum():
+						break
+				self.push_back(character)
 
-		if self.__peek.isalpha():
-			val = ""
-			while True:
-				val = val + self.__peek.upper()
-				self.__read()
-				if not(self.__peek.isalnum()):
-					break
-
-			if val in self.__Tokens:
-				return self.__Tokens[val]
-
-			w = Token(Tag.ID, val)
-			self.__Tokens[val] = Token(Tag.ID, val)
-			return w
-
-		if not(self.__peek):
-			return Token(Tag.EOF)			
-
-		token = Token(ord(self.__peek))
-		self.__peek = ' ' 
-		return token
+				if lexem in self.words:
+					return self.words[lexem]
+				
+				token = Token(Tag.ID, lexem)
+				self.words[lexem] = token
+				return token
+			
+			return Token(ord(character))

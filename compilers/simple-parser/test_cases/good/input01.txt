@@ -1,0 +1,19 @@
+var x, y, radio, n1, n2, n3, aux1, aux2
+
+x := 5
+y := 6
+PRINT(x + 5 * (y * 7 + 5))
+
+radio := 10
+PRINT(3.1415 * radio * radio)
+
+n1 := 1
+n2 := 2
+n3 := 3
+aux1 := (n1 + n2 + n3) / 3
+PRINT(aux1)
+
+aux1 := (2*x) + (3*y) - 1
+aux2 := (x*x) + (2*x) + 1
+PRINT(aux1 > aux2)
+PRINT((x <= y) AND (aux2 <> aux1))
