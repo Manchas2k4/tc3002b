@@ -3,7 +3,7 @@
 	<statement-sequence>
 
 <declaration-statement> ::= VAR <identifier> <identifier-list>
-  
+
 <identifier-list> ::= ',' <identifier> <identifier-list>
 <identifier-list> ::= ' '
 
@@ -32,7 +32,7 @@
 	
 <extended-conditional-term> ::= 
 	AND <equality-expression> <extended-conditional-term>
-<extended-boolean-term> ::= ' '
+<extended-conditional-term> ::= ' '
 
 <equality-expression> ::=
 	<relational-expression> <extended-equality-expression>
