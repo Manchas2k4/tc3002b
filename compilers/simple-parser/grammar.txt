@@ -1,9 +1,8 @@
 <program> ::=
-	<declaration-sequence>
+	<declaration-statement>
 	<statement-sequence>
 
-<declaration-statement> ::=
-  VAR <identifier> <identifier-list>
+<declaration-statement> ::= VAR <identifier> <identifier-list>
   
 <identifier-list> ::= ',' <identifier> <identifier-list>
 <identifier-list> ::= ' '
